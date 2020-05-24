@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useFetch } from "./hooks/useFetch";
 import { Answer } from "./components/Answer";
 import { Loader } from "./components/Loader";
-
+import { useSessionStorage } from "./hooks/useSessionStorage";
+const storageName = "gameInfo";
 const key = "udydrloa7v16d3bo5dmmvutycbxaht4021wxrfu09nrhzmhcd";
 
 const randomWordURL =
@@ -16,11 +17,16 @@ function App() {
   const [words, setWords] = useState([]);
   const [rightWord, setRightWord] = useState(null);
 
-  const [gameInfo, setGameInfo] = useState(() => ({
-    question: 1,
-    rightAnswers: 0,
-    tries: 0,
-  }));
+  const { getItem, setItem } = useSessionStorage();
+  const [gameInfo, setGameInfo] = useState(() =>
+    getItem(storageName)
+      ? getItem(storageName)
+      : {
+          question: 1,
+          rightAnswers: 0,
+          tries: 0,
+        }
+  );
 
   const wordDefenitionURL = useMemo(() => {
     return rightWord?.word && !rightWord?.defenition
@@ -56,24 +62,28 @@ function App() {
     console.groupEnd();
   }, [rightWord]);
 
-  const [bodyColor, setBodyColor] = useState(["App"]);
+  const [bodyColor, setBodyColor] = useState([]);
   const clickHandler = (isRight, addClass) => {
     if (isRight) {
       addClass("right_answer");
       addClass("right_answer_text");
-      setBodyColor(["App", "right_answer"]);
-
-      setGameInfo((gameInfo) => ({
-        rightAnswers: gameInfo.rightAnswers + 1,
-        question: gameInfo.question + 1,
-        tries: gameInfo.tries + 1,
-      }));
+      setBodyColor(["right_answer"]);
+      setTimeout(() => {
+        setGameInfo((gameInfo) => ({
+          rightAnswers: gameInfo.rightAnswers + 1,
+          question: gameInfo.question + 1,
+          tries: gameInfo.tries + 1,
+        }));
+        setItem(storageName, gameInfo);
+      }, 1000);
     } else {
       setGameInfo((gameInfo) => ({
         ...gameInfo,
         tries: gameInfo.tries + 1,
       }));
-      setBodyColor(["App", "wrong_answer"]);
+      setItem(storageName, gameInfo);
+
+      setBodyColor(["wrong_answer"]);
       addClass("wrong_answer");
       addClass("wrong_answer_text");
     }
@@ -82,6 +92,11 @@ function App() {
     <div
       style={{
         transition: "all 0.3s ease-in-out",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100vw",
+        height: "100vh",
       }}
       className={bodyColor.join(" ")}
     >
@@ -109,18 +124,16 @@ function App() {
               }}
             ></div>
             <div className="question_answers">
-              <ul>
-                {words.length &&
-                  rightWord?.word &&
-                  words.map(({ word }, i) => (
-                    <Answer
-                      key={i}
-                      word={word}
-                      isRight={!!(word === rightWord?.word)}
-                      clickHandler={clickHandler}
-                    />
-                  ))}
-              </ul>
+              {words.length &&
+                rightWord?.word &&
+                words.map(({ word }, i) => (
+                  <Answer
+                    key={i}
+                    word={word}
+                    isRight={!!(word === rightWord?.word)}
+                    clickHandler={clickHandler}
+                  />
+                ))}
             </div>
           </div>
         ) : (

@@ -10,7 +10,7 @@ export const Answer = ({ word, isRight, clickHandler }) => {
     setClasses(["question_answer"]);
   }, [word]);
   return (
-    <li
+    <div
       className={classes.join(" ")}
       onClick={() => clickHandler(isRight, addClass)}
     >
@@ -22,6 +22,6 @@ export const Answer = ({ word, isRight, clickHandler }) => {
       ) : (
         "..."
       )}
-    </li>
+    </div>
   );
 };
