@@ -7,7 +7,7 @@ export const useFetch = () => {
       let data = await res.json();
       return data;
     } catch (e) {
-      return false;
+      window.location.reload();
     }
   }, []);
 

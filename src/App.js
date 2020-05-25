@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useFetch } from "./hooks/useFetch";
 import { Answer } from "./components/Answer";
 import { Loader } from "./components/Loader";
-import { useSessionStorage } from "./hooks/useSessionStorage";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 const storageName = "gameInfo";
 const key = "udydrloa7v16d3bo5dmmvutycbxaht4021wxrfu09nrhzmhcd";
 
@@ -17,7 +17,8 @@ function App() {
   const [words, setWords] = useState([]);
   const [rightWord, setRightWord] = useState(null);
 
-  const { getItem, setItem } = useSessionStorage();
+  const { getItem, setItem } = useLocalStorage();
+
   const [gameInfo, setGameInfo] = useState(() =>
     getItem(storageName)
       ? getItem(storageName)
@@ -27,6 +28,9 @@ function App() {
           tries: 0,
         }
   );
+  useEffect(() => {
+    setItem(storageName, gameInfo);
+  }, [gameInfo, setItem]);
 
   const wordDefenitionURL = useMemo(() => {
     return rightWord?.word && !rightWord?.defenition
@@ -74,14 +78,12 @@ function App() {
           question: gameInfo.question + 1,
           tries: gameInfo.tries + 1,
         }));
-        setItem(storageName, gameInfo);
       }, 1000);
     } else {
       setGameInfo((gameInfo) => ({
         ...gameInfo,
         tries: gameInfo.tries + 1,
       }));
-      setItem(storageName, gameInfo);
 
       setBodyColor(["wrong_answer"]);
       addClass("wrong_answer");
